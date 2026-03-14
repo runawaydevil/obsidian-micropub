@@ -117,9 +117,10 @@ export class Publisher {
       props["summary"] = [String(fm["summary"] ?? fm["excerpt"])];
     }
 
-    // Published date
-    if (fm["date"]) {
-      props["published"] = [new Date(String(fm["date"])).toISOString()];
+    // Published date — prefer `created` (Obsidian default), fall back to `date`
+    const rawDate = fm["created"] ?? fm["date"];
+    if (rawDate) {
+      props["published"] = [new Date(String(rawDate)).toISOString()];
     }
 
     // Categories from frontmatter `category` or `tags` (excluding garden/* tags)
