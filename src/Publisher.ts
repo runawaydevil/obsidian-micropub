@@ -41,7 +41,9 @@ export class Publisher {
 
     // Determine if this is an update (post already has a URL) or new post
     const existingUrl: string | undefined =
-      frontmatter["mp-url"] ?? frontmatter["url"] ?? undefined;
+      frontmatter["mp-url"] != null ? String(frontmatter["mp-url"])
+      : frontmatter["url"] != null  ? String(frontmatter["url"])
+      : undefined;
 
     // Upload local images and rewrite markdown references
     const { content: processedBody, uploadedUrls } =
@@ -169,9 +171,16 @@ export class Publisher {
       props["visibility"] = [visibility];
     }
 
-    // AI disclosure (custom property passed through to Indiekit)
+    // AI disclosure — flatten nested `ai` object into individual top-level
+    // properties so Indiekit writes them as plain scalar frontmatter keys.
+    // Sending `ai: [{textLevel: "1"}]` makes Indiekit write a YAML array,
+    // but the template reads `aiTextLevel` / `aiCodeLevel` as top-level scalars.
     if (fm["ai"] && typeof fm["ai"] === "object") {
-      props["ai"] = [fm["ai"]];
+      const ai = fm["ai"] as Record<string, unknown>;
+      if (ai["textLevel"]    != null) props["aiTextLevel"]    = [String(ai["textLevel"])];
+      if (ai["codeLevel"]    != null) props["aiCodeLevel"]    = [String(ai["codeLevel"])];
+      if (ai["aiTools"]      != null) props["aiTools"]        = [String(ai["aiTools"])];
+      if (ai["aiDescription"] != null) props["aiDescription"] = [String(ai["aiDescription"])];
     }
 
     // Photos: prefer structured photo array from frontmatter (with alt text),
