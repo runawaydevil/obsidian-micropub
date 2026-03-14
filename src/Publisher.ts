@@ -48,7 +48,7 @@ export class Publisher {
       await this.processImages(body);
 
     // Build Micropub properties
-    const properties = this.buildProperties(frontmatter, processedBody, uploadedUrls);
+    const properties = this.buildProperties(frontmatter, processedBody, uploadedUrls, file.basename);
 
     let result: PublishResult;
 
@@ -78,6 +78,7 @@ export class Publisher {
     fm: Record<string, unknown>,
     body: string,
     uploadedUrls: string[],
+    basename: string,
   ): Record<string, unknown> {
     const props: Record<string, unknown> = {};
 
@@ -107,9 +108,20 @@ export class Publisher {
 
     // ── Standard properties ───────────────────────────────────────────────
 
-    // Title (articles have titles; notes/micro-posts don't)
-    if (fm["title"]) {
-      props["name"] = [String(fm["title"])];
+    // Post type — explicit `postType` field takes priority over auto-detection.
+    // Set this in your Obsidian template so the post type is declared up front:
+    //   postType: article  → always publishes as article (sets `name`)
+    //   postType: note     → always publishes as note (skips `name`)
+    //   (absent)           → auto-detect: has title → article, otherwise → note
+    const postType = fm["postType"] ?? fm["post-type"] ?? fm["type"];
+    const isArticle =
+      postType === "article" ||
+      (!postType && Boolean(fm["title"] ?? fm["name"]));
+
+    if (isArticle) {
+      // Use explicit title/name, or fall back to the note filename (without extension)
+      const titleValue = fm["title"] ?? fm["name"] ?? basename;
+      props["name"] = [String(titleValue)];
     }
 
     // Summary / excerpt
