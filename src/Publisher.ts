@@ -139,7 +139,7 @@ export class Publisher {
 
     // Categories from frontmatter `category` or `tags` (excluding garden/* tags)
     const rawTags = this.resolveArray(fm["tags"] ?? fm["category"]);
-    const gardenStage = this.extractGardenStage(rawTags);
+    const gardenStageFromTags = this.extractGardenStage(rawTags);
     const normalTags = rawTags.filter(
       (t) => !t.startsWith(GARDEN_TAG_PREFIX) && t !== "garden",
     );
@@ -147,9 +147,16 @@ export class Publisher {
       props["category"] = normalTags;
     }
 
-    // Garden stage → dedicated property
-    if (this.settings.mapGardenTags && gardenStage) {
-      props["garden-stage"] = [gardenStage];
+    // Garden stage — prefer explicit `gardenStage` frontmatter property,
+    // fall back to extracting from #garden/* tags.
+    // Send as camelCase `gardenStage` so Indiekit writes it directly to
+    // frontmatter without needing a preset property mapping for `garden-stage`.
+    if (this.settings.mapGardenTags) {
+      const gardenStage =
+        (fm["gardenStage"] as string | undefined) ?? gardenStageFromTags;
+      if (gardenStage) {
+        props["gardenStage"] = [gardenStage];
+      }
     }
 
     // Syndication targets
@@ -173,15 +180,20 @@ export class Publisher {
 
     // AI disclosure — flatten nested `ai` object into individual top-level
     // properties so Indiekit writes them as plain scalar frontmatter keys.
+    // Also support top-level `aiTextLevel`, `aiTools`, etc. set directly.
     // Sending `ai: [{textLevel: "1"}]` makes Indiekit write a YAML array,
     // but the template reads `aiTextLevel` / `aiCodeLevel` as top-level scalars.
-    if (fm["ai"] && typeof fm["ai"] === "object") {
-      const ai = fm["ai"] as Record<string, unknown>;
-      if (ai["textLevel"]    != null) props["aiTextLevel"]    = [String(ai["textLevel"])];
-      if (ai["codeLevel"]    != null) props["aiCodeLevel"]    = [String(ai["codeLevel"])];
-      if (ai["aiTools"]      != null) props["aiTools"]        = [String(ai["aiTools"])];
-      if (ai["aiDescription"] != null) props["aiDescription"] = [String(ai["aiDescription"])];
-    }
+    const aiObj = (fm["ai"] && typeof fm["ai"] === "object")
+      ? fm["ai"] as Record<string, unknown>
+      : {};
+    const aiTextLevel    = fm["aiTextLevel"]    ?? aiObj["textLevel"];
+    const aiCodeLevel    = fm["aiCodeLevel"]    ?? aiObj["codeLevel"];
+    const aiTools        = fm["aiTools"]        ?? aiObj["aiTools"]   ?? aiObj["tools"];
+    const aiDescription  = fm["aiDescription"]  ?? aiObj["aiDescription"] ?? aiObj["description"];
+    if (aiTextLevel    != null) props["aiTextLevel"]   = [String(aiTextLevel)];
+    if (aiCodeLevel    != null) props["aiCodeLevel"]   = [String(aiCodeLevel)];
+    if (aiTools        != null) props["aiTools"]       = [String(aiTools)];
+    if (aiDescription  != null) props["aiDescription"] = [String(aiDescription)];
 
     // Photos: prefer structured photo array from frontmatter (with alt text),
     // fall back to uploaded local images.

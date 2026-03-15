@@ -105,6 +105,7 @@ export interface MicropubConfig {
 export type GardenStage =
   | "plant"
   | "cultivate"
+  | "evergreen"
   | "question"
   | "repot"
   | "revitalize"
@@ -113,6 +114,7 @@ export type GardenStage =
 export const GARDEN_STAGE_LABELS: Record<GardenStage, string> = {
   plant:      "🌱 Seedling",
   cultivate:  "🌿 Growing",
+  evergreen:  "🌳 Evergreen",
   question:   "❓ Open Question",
   repot:      "🪴 Repotting",
   revitalize: "✨ Revitalizing",
