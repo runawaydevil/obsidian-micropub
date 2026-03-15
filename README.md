@@ -64,12 +64,13 @@ Open **Settings → Micropub Publisher**.
 
 ## Digital Garden workflow
 
-Tag any note in Obsidian with a `#garden/*` tag:
+Tag any note in Obsidian with a `#garden/*` tag, or set `gardenStage` directly in frontmatter:
 
 | Obsidian tag | Published property | Blog display |
 |---|---|---|
 | `#garden/plant` | `gardenStage: plant` | 🌱 Seedling |
 | `#garden/cultivate` | `gardenStage: cultivate` | 🌿 Growing |
+| `#garden/evergreen` | `gardenStage: evergreen` | 🌳 Evergreen |
 | `#garden/question` | `gardenStage: question` | ❓ Open Question |
 | `#garden/repot` | `gardenStage: repot` | 🪴 Repotting |
 | `#garden/revitalize` | `gardenStage: revitalize` | ✨ Revitalizing |
@@ -100,15 +101,63 @@ mp-url: "https://example.com/articles/2026/on-building-in-public"
 
 ## Frontmatter properties recognised
 
+### Standard properties
+
 | Property | Effect |
 |---|---|
 | `title` | Sets the post `name` (article mode) |
-| `date` | Sets `published` (ISO 8601) |
-| `tags` / `category` | Becomes Micropub `category` (excluding `garden/*` tags) |
+| `created` / `date` | Sets `published` date (`created` takes priority — matches Obsidian's default date field) |
+| `postType` | Force post type: `article` sends a title (uses filename if none set), `note` skips title |
+| `tags` / `category` | Becomes Micropub `category` (excluding `garden/*` and bare `garden` tags) |
+| `summary` / `excerpt` | Sets `summary` property |
 | `visibility` | `public` / `unlisted` / `private` |
+| `gardenStage` | Explicit garden stage — see table below |
 | `mp-url` | Triggers an **update** rather than create |
-| `mp-syndicate-to` | Pre-fills syndication target list |
+| `mp-syndicate-to` / `mpSyndicateTo` | Pre-fills syndication target list |
 | `mp-*` | Any other `mp-*` keys passed through verbatim |
+
+### AI disclosure properties
+
+Use flat top-level properties for best Obsidian compatibility (Obsidian's Properties UI handles them more reliably than nested objects):
+
+| Property | Values | Meaning |
+|---|---|---|
+| `aiTextLevel` | `"0"` `"1"` `"2"` `"3"` | None / Editorial / Co-drafted / AI-generated |
+| `aiCodeLevel` | `"0"` `"1"` `"2"` | None / AI-assisted / AI-generated |
+| `aiTools` | string | Tools used, e.g. `"Claude"` |
+| `aiDescription` | string | Free-text disclosure note |
+
+Nested `ai:` objects (e.g. `ai: {textLevel: "1"}`) also work but flat keys are recommended.
+
+**Example article template:**
+
+```yaml
+---
+title: "My Post"
+created: 2026-03-15T10:00:00
+postType: article
+tags:
+  - garden/cultivate
+  - indieweb
+aiTextLevel: "1"
+aiCodeLevel: "0"
+aiTools: "Claude"
+---
+```
+
+### Digital Garden stages
+
+Set via `gardenStage` frontmatter or a `#garden/<stage>` tag:
+
+| Stage | Badge | Meaning |
+|---|---|---|
+| `plant` | 🌱 Seedling | New, rough idea |
+| `cultivate` | 🌿 Growing | Being actively developed |
+| `evergreen` | 🌳 Evergreen | Mature, lasting content |
+| `question` | ❓ Open Question | An unresolved inquiry |
+| `repot` | 🪴 Repotting | Restructuring needed |
+| `revitalize` | ✨ Revitalizing | Being refreshed |
+| `revisit` | 🔄 Revisit | Flagged to come back to |
 
 ---
 
