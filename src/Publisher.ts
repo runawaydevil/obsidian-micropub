@@ -254,7 +254,7 @@ export class Publisher {
       if (clean.startsWith(GARDEN_TAG_PREFIX)) {
         const stage = clean.slice(GARDEN_TAG_PREFIX.length) as GardenStage;
         const valid: GardenStage[] = [
-          "plant", "cultivate", "question", "repot", "revitalize", "revisit",
+          "plant", "cultivate", "evergreen", "question", "repot", "revitalize", "revisit",
         ];
         if (valid.includes(stage)) return stage;
       }
