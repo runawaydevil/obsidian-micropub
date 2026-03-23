@@ -49,8 +49,11 @@ export class Publisher {
     const { content: processedBody, uploadedUrls } =
       await this.processImages(body);
 
+    // Resolve [[WikiLinks]] in body to blog URLs
+    const linkedBody = this.resolveWikilinks(processedBody, file.path);
+
     // Build Micropub properties
-    const properties = this.buildProperties(frontmatter, processedBody, uploadedUrls, file.basename);
+    const properties = this.buildProperties(frontmatter, linkedBody, uploadedUrls, file.basename, file.path);
 
     let result: PublishResult;
 
@@ -81,6 +84,7 @@ export class Publisher {
     body: string,
     uploadedUrls: string[],
     basename: string,
+    filePath: string,
   ): Record<string, unknown> {
     const props: Record<string, unknown> = {};
 
@@ -212,6 +216,17 @@ export class Publisher {
       props["photo"] = fmPhotos;
     } else if (uploadedUrls.length > 0) {
       props["photo"] = uploadedUrls.map((url) => ({ value: url }));
+    }
+
+    // Related posts — resolve [[WikiLink]] wikilinks to published blog URLs
+    const relatedRaw = this.resolveArray(fm["related"]);
+    if (relatedRaw.length > 0) {
+      const relatedUrls = relatedRaw
+        .map((ref) => this.resolveWikilinkToUrl(ref, filePath))
+        .filter((url): url is string => url !== null);
+      if (relatedUrls.length > 0) {
+        props["related"] = relatedUrls;
+      }
     }
 
     // Pass through any `mp-*` properties from frontmatter verbatim
@@ -433,6 +448,54 @@ export class Publisher {
     }
     // Insert before closing ---
     return fmBlock.replace(/(\r?\n---\r?\n)$/, `\n${key}: ${value}$1`);
+  }
+
+  // ── Wikilink resolution ──────────────────────────────────────────────────
+
+  /**
+   * Replace Obsidian [[WikiLinks]] in body text with Markdown hyperlinks.
+   * Uses mp-url from the linked note's frontmatter. Falls back to plain
+   * display text if the note is not found or not yet published.
+   * Image embeds (![[...]]) are left untouched via negative lookbehind.
+   */
+  private resolveWikilinks(body: string, sourcePath: string): string {
+    return body.replace(
+      /(?<!!)\[\[([^\]|#]+)(#[^\]|]*)?\|?([^\]]*)\]\]/g,
+      (_match, noteName: string, anchor: string | undefined, alias: string) => {
+        const cleanName = noteName.trim();
+        const displayText =
+          alias?.trim() || cleanName.split("/").pop() || cleanName;
+        const url = this.resolveWikilinkToUrl(`[[${cleanName}]]`, sourcePath);
+        if (!url) return displayText;
+        const anchorSuffix = anchor
+          ? anchor.toLowerCase().replace(/\s+/g, "-")
+          : "";
+        return `[${displayText}](${url}${anchorSuffix})`;
+      },
+    );
+  }
+
+  /**
+   * Resolve a single [[WikiLink]] or plain URL string to a published mp-url.
+   * Returns null if the note is not found or has no mp-url.
+   */
+  private resolveWikilinkToUrl(
+    ref: string,
+    sourcePath: string,
+  ): string | null {
+    if (ref.startsWith("http")) return ref;
+    const m = ref.match(/^\[\[([^\]|#]+)(?:#[^\]|]*)?\|?[^\]]*\]\]$/);
+    if (!m) return null;
+    const file = this.app.metadataCache.getFirstLinkpathDest(
+      m[1].trim(),
+      sourcePath,
+    );
+    if (!file) return null;
+    return (
+      (this.app.metadataCache.getFileCache(file)?.frontmatter?.[
+        "mp-url"
+      ] as string | undefined) ?? null
+    );
   }
 
   private resolveArray(value: unknown): string[] {
