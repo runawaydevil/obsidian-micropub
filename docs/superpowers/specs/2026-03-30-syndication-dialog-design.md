@@ -67,7 +67,7 @@ mp-syndicate-to: []
 - Render modal with checkbox list of targets
 - Pre-check targets from `defaultSyndicateTo` setting
 - Handle OK/Cancel actions
-- Return selected target UIDs
+- Return selected target UIDs via promise
 
 **Interface:**
 ```typescript
@@ -75,10 +75,14 @@ export class SyndicationDialog extends Modal {
   constructor(
     app: App,
     targets: SyndicationTarget[],
-    defaultSelected: string[],
-    onConfirm: (selected: string[]) => void,
-    onCancel: () => void
+    defaultSelected: string[]
   );
+
+  /**
+   * Opens the dialog and waits for user selection.
+   * @returns Selected target UIDs, or null if cancelled.
+   */
+  async awaitSelection(): Promise<string[] | null>;
 }
 ```
 

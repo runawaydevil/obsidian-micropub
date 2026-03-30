@@ -167,9 +167,9 @@ export class Publisher {
         props["gardenStage"] = [gardenStage];
         // Pass through the evergreen date so Indiekit writes it to the blog post.
         if (gardenStage === "evergreen") {
-          const evergreeSince = fm["evergreen-since"] as string | undefined;
-          if (evergreeSince) {
-            props["evergreeSince"] = [String(evergreeSince)];
+          const evergreenSince = fm["evergreen-since"] as string | undefined;
+          if (evergreenSince) {
+            props["evergreenSince"] = [String(evergreenSince)];
           }
         }
       }
