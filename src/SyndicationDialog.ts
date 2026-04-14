@@ -21,7 +21,7 @@ export class SyndicationDialog extends Modal {
   ) {
     super(app);
     this.selected = new Set(defaultSelected.filter((uid) =>
-      targets.some((t) => t.uid === uid),
+      targets.some((target) => target.uid === uid),
     ));
   }
 
