@@ -15,6 +15,7 @@ import { App, Notice, PluginSettingTab, Setting } from "obsidian";
 import type MicropubPlugin from "./main";
 import { MicropubClient } from "./MicropubClient";
 import { IndieAuth } from "./IndieAuth";
+import { t } from "./i18n";
 
 export class MicropubSettingsTab extends PluginSettingTab {
   constructor(
@@ -28,10 +29,10 @@ export class MicropubSettingsTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
 
-    containerEl.createEl("h2", { text: "Micropub Publisher" });
+    containerEl.createEl("h2", { text: t("settingsTitle") });
 
     // ── Site URL + Sign In ───────────────────────────────────────────────
-    containerEl.createEl("h3", { text: "Account" });
+    containerEl.createEl("h3", { text: t("settingsAccount") });
 
     // Show current sign-in status
     if (this.plugin.settings.me && this.plugin.settings.accessToken) {
@@ -41,16 +42,16 @@ export class MicropubSettingsTab extends PluginSettingTab {
     }
 
     // ── Endpoints (collapsed / advanced) ────────────────────────────────
-    containerEl.createEl("h3", { text: "Endpoints" });
+    containerEl.createEl("h3", { text: t("settingsEndpoints") });
 
     containerEl.createEl("p", {
-      text: "These are filled automatically when you sign in. Only edit them manually if your server uses non-standard paths.",
+      text: t("settingsEndpointsHint"),
       cls: "setting-item-description",
     });
 
     new Setting(containerEl)
-      .setName("Micropub endpoint")
-      .setDesc("e.g. https://blog.giersig.eu/micropub")
+      .setName(t("settingMicropubEndpoint"))
+      .setDesc(t("settingMicropubEndpointDesc"))
       .addText((text) =>
         text
           .setPlaceholder("https://example.com/micropub")
@@ -62,8 +63,8 @@ export class MicropubSettingsTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Media endpoint")
-      .setDesc("For image uploads. Auto-discovered if blank.")
+      .setName(t("settingMediaEndpoint"))
+      .setDesc(t("settingMediaEndpointDesc"))
       .addText((text) =>
         text
           .setPlaceholder("https://example.com/micropub/media")
@@ -75,16 +76,16 @@ export class MicropubSettingsTab extends PluginSettingTab {
       );
 
     // ── Publish behaviour ────────────────────────────────────────────────
-    containerEl.createEl("h3", { text: "Publish Behaviour" });
+    containerEl.createEl("h3", { text: t("settingsPublishBehaviour") });
 
     new Setting(containerEl)
-      .setName("Default visibility")
-      .setDesc("Applies when the note has no explicit visibility property.")
+      .setName(t("settingVisibility"))
+      .setDesc(t("settingVisibilityDesc"))
       .addDropdown((drop) =>
         drop
-          .addOption("public", "Public")
-          .addOption("unlisted", "Unlisted")
-          .addOption("private", "Private")
+          .addOption("public", t("visibilityPublic"))
+          .addOption("unlisted", t("visibilityUnlisted"))
+          .addOption("private", t("visibilityPrivate"))
           .setValue(this.plugin.settings.defaultVisibility)
           .onChange(async (value) => {
             this.plugin.settings.defaultVisibility = value as
@@ -96,11 +97,8 @@ export class MicropubSettingsTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Write URL back to note")
-      .setDesc(
-        "After publishing, store the post URL as `mp-url` in frontmatter. " +
-        "Subsequent publishes will update the existing post instead of creating a new one.",
-      )
+      .setName(t("settingWriteUrl"))
+      .setDesc(t("settingWriteUrlDesc"))
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.writeUrlToFrontmatter)
@@ -111,16 +109,13 @@ export class MicropubSettingsTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Syndication dialog")
-      .setDesc(
-        "When to show the cross-posting dialog before publishing. " +
-        "'When needed' shows it only if the note has no mp-syndicate-to frontmatter.",
-      )
+      .setName(t("settingSyndDialog"))
+      .setDesc(t("settingSyndDialogDesc"))
       .addDropdown((drop) =>
         drop
-          .addOption("when-needed", "When needed")
-          .addOption("always", "Always")
-          .addOption("never", "Never")
+          .addOption("when-needed", t("syndDialogWhenNeeded"))
+          .addOption("always", t("syndDialogAlways"))
+          .addOption("never", t("syndDialogNever"))
           .setValue(this.plugin.settings.showSyndicationDialog)
           .onChange(async (value) => {
             this.plugin.settings.showSyndicationDialog = value as
@@ -134,16 +129,16 @@ export class MicropubSettingsTab extends PluginSettingTab {
     // Show configured defaults with a clear button
     const defaults = this.plugin.settings.defaultSyndicateTo;
     const defaultsSetting = new Setting(containerEl)
-      .setName("Default syndication targets")
+      .setName(t("settingSyndDefaults"))
       .setDesc(
         defaults.length > 0
           ? defaults.join(", ")
-          : "None configured. Targets checked by default in the publish dialog.",
+          : t("settingSyndDefaultsNone"),
       );
     if (defaults.length > 0) {
       defaultsSetting.addButton((btn) =>
         btn
-          .setButtonText("Clear defaults")
+          .setButtonText(t("btnClearDefaults"))
           .setWarning()
           .onClick(async () => {
             this.plugin.settings.defaultSyndicateTo = [];
@@ -154,14 +149,11 @@ export class MicropubSettingsTab extends PluginSettingTab {
     }
 
     // ── Digital Garden ───────────────────────────────────────────────────
-    containerEl.createEl("h3", { text: "Digital Garden" });
+    containerEl.createEl("h3", { text: t("settingsDigitalGarden") });
 
     new Setting(containerEl)
-      .setName("Map #garden/* tags to gardenStage")
-      .setDesc(
-        "Obsidian tags like #garden/plant become a `garden-stage: plant` Micropub " +
-        "property. The blog renders these as growth stage badges at /garden/.",
-      )
+      .setName(t("settingGardenTags"))
+      .setDesc(t("settingGardenTagsDesc"))
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.mapGardenTags)
@@ -172,7 +164,7 @@ export class MicropubSettingsTab extends PluginSettingTab {
       );
 
     containerEl.createEl("p", {
-      text: "Stages: plant 🌱 · cultivate 🌿 · question ❓ · repot 🪴 · revitalize ✨ · revisit 🔄",
+      text: t("settingGardenStages"),
       cls: "setting-item-description",
     });
   }
@@ -182,14 +174,11 @@ export class MicropubSettingsTab extends PluginSettingTab {
   private renderSignedOut(containerEl: HTMLElement): void {
     // Site URL input + Sign In button on the same row
     new Setting(containerEl)
-      .setName("Site URL")
-      .setDesc(
-        "Your site's home page. Clicking Sign in opens your blog's login page " +
-        "in the browser — the same flow iA Writer uses.",
-      )
+      .setName(t("settingSiteUrl"))
+      .setDesc(t("settingSiteUrlDesc"))
       .addText((text) =>
         text
-          .setPlaceholder("https://blog.giersig.eu")
+          .setPlaceholder(t("settingSiteUrlPlaceholder"))
           .setValue(this.plugin.settings.siteUrl)
           .onChange(async (value) => {
             this.plugin.settings.siteUrl = value.trim();
@@ -198,17 +187,17 @@ export class MicropubSettingsTab extends PluginSettingTab {
       )
       .addButton((btn) => {
         btn
-          .setButtonText("Sign in")
+          .setButtonText(t("btnSignIn"))
           .setCta()
           .onClick(async () => {
             const siteUrl = this.plugin.settings.siteUrl.trim();
             if (!siteUrl) {
-              new Notice("Enter your site URL first.");
+              new Notice(t("noticeEnterSiteUrl"));
               return;
             }
 
             btn.setDisabled(true);
-            btn.setButtonText("Opening browser…");
+            btn.setButtonText(t("btnOpeningBrowser"));
 
             try {
               const result = await IndieAuth.signIn(siteUrl);
@@ -245,12 +234,12 @@ export class MicropubSettingsTab extends PluginSettingTab {
                 }
               }
 
-              new Notice(`✅ Signed in as ${result.me}`);
+              new Notice(t("noticeSignedInAs", { me: result.me }));
               this.display(); // Refresh to show signed-in state
             } catch (err: unknown) {
-              new Notice(`Sign-in failed: ${String(err)}`, 8000);
+              new Notice(t("noticeSignInFailed", { error: String(err) }), 8000);
               btn.setDisabled(false);
-              btn.setButtonText("Sign in");
+              btn.setButtonText(t("btnSignIn"));
             }
           });
       });
@@ -258,15 +247,15 @@ export class MicropubSettingsTab extends PluginSettingTab {
     // Divider + manual token fallback (collapsed by default)
     const details = containerEl.createEl("details");
     details.createEl("summary", {
-      text: "Or paste a token manually",
+      text: t("manualTokenSummary"),
       cls: "setting-item-description",
     });
     details.style.marginTop = "8px";
     details.style.marginBottom = "8px";
 
     new Setting(details)
-      .setName("Access token")
-      .setDesc("Bearer token from your Indiekit admin panel.")
+      .setName(t("settingAccessToken"))
+      .setDesc(t("settingAccessTokenDesc"))
       .addText((text) => {
         text
           .setPlaceholder("your-bearer-token")
@@ -278,12 +267,12 @@ export class MicropubSettingsTab extends PluginSettingTab {
         text.inputEl.type = "password";
       })
       .addButton((btn) =>
-        btn.setButtonText("Verify").onClick(async () => {
+        btn.setButtonText(t("btnVerify")).onClick(async () => {
           if (
             !this.plugin.settings.micropubEndpoint ||
             !this.plugin.settings.accessToken
           ) {
-            new Notice("Set the Micropub endpoint and token first.");
+            new Notice(t("noticeSetEndpointFirst"));
             return;
           }
           btn.setDisabled(true);
@@ -294,9 +283,9 @@ export class MicropubSettingsTab extends PluginSettingTab {
               () => this.plugin.settings.accessToken,
             );
             await client.fetchConfig();
-            new Notice("✅ Token is valid!");
+            new Notice(t("noticeTokenValid"));
           } catch (err: unknown) {
-            new Notice(`Token check failed: ${String(err)}`);
+            new Notice(t("noticeTokenCheckFailed", { error: String(err) }));
           } finally {
             btn.setDisabled(false);
           }
@@ -327,7 +316,7 @@ export class MicropubSettingsTab extends PluginSettingTab {
 
     const info = banner.createDiv();
     info.createEl("div", {
-      text: "Signed in",
+      text: t("lblSignedIn"),
       attr: { style: "font-size:.75rem;color:var(--text-muted);margin-bottom:2px" },
     });
     info.createEl("div", {
@@ -336,7 +325,7 @@ export class MicropubSettingsTab extends PluginSettingTab {
     });
 
     new Setting(containerEl)
-      .setName("Site URL")
+      .setName(t("settingSiteUrl"))
       .addText((text) =>
         text
           .setValue(this.plugin.settings.siteUrl)
@@ -344,7 +333,7 @@ export class MicropubSettingsTab extends PluginSettingTab {
       )
       .addButton((btn) =>
         btn
-          .setButtonText("Sign out")
+          .setButtonText(t("btnSignOut"))
           .setWarning()
           .onClick(async () => {
             this.plugin.settings.accessToken = "";
