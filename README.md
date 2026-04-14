@@ -2,6 +2,8 @@
 
 An Obsidian plugin to publish notes to **any Micropub-compatible endpoint** — Indiekit, Micro.blog, or any server implementing the [W3C Micropub spec](https://www.w3.org/TR/micropub/).
 
+> 🇧🇷 **PT-BR Manual Fork:** This repository is a fork of [svemagie/obsidian-micropub](https://github.com/svemagie/obsidian-micropub) created specifically to provide documentation and a user manual translated into Brazilian Portuguese.
+
 Forked and generalised from [svemagie/obsidian-microblog](https://github.com/svemagie/obsidian-microblog) (MIT).
 
 ---
@@ -221,7 +223,7 @@ src/
 
 ## Roadmap
 
-- [ ] Publish dialog with syndication target checkboxes
+- [x] Publish dialog with syndication target checkboxes
 - [ ] Scheduled publishing (`mp-published-at`)
 - [ ] Pull categories from Micropub `?q=category` for autocomplete
 - [ ] Multi-endpoint support (publish to multiple blogs)
