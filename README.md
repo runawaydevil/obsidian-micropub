@@ -70,6 +70,8 @@ Expand **Or paste a token manually** and enter a bearer token from your Indiekit
 | Default visibility | `public` | Applied when the note has no `visibility` field |
 | Write URL back to note | on | Saves the published post URL as `mp-url` in frontmatter |
 | Map #garden/* tags | on | Converts `#garden/plant` → `gardenStage: plant` Micropub property |
+| Show syndication dialog | `when-needed` | `when-needed` / `always` / `never` — controls when target picker appears before publish |
+| Default syndication targets | — | UIDs pre-ticked in the syndication dialog (from your Micropub config) |
 
 ---
 
@@ -209,19 +211,20 @@ npm run build  # production bundle (minified)
 
 ```
 src/
-  main.ts             Plugin entry point, commands, ribbon, protocol handler
-  types.ts            Shared interfaces and constants
-  MicropubClient.ts   Low-level HTTP (create, update, upload, discover)
-  Publisher.ts        Orchestrates publish flow (parse → upload → send → write-back)
-  IndieAuth.ts        PKCE IndieAuth sign-in via GitHub Pages relay
-  SettingsTab.ts      Obsidian settings UI
+  main.ts               Plugin entry point, commands, ribbon, protocol handler
+  types.ts              Shared interfaces and constants
+  MicropubClient.ts     Low-level HTTP (create, update, upload, discover)
+  Publisher.ts          Orchestrates publish flow (parse → upload → send → write-back)
+  IndieAuth.ts          PKCE IndieAuth sign-in via GitHub Pages relay
+  SettingsTab.ts        Obsidian settings UI
+  SyndicationDialog.ts  Pre-publish dialog to select syndication targets
 ```
 
 ---
 
 ## Roadmap
 
-- [ ] Publish dialog with syndication target checkboxes
+- [x] Publish dialog with syndication target checkboxes
 - [ ] Scheduled publishing (`mp-published-at`)
 - [ ] Pull categories from Micropub `?q=category` for autocomplete
 - [ ] Multi-endpoint support (publish to multiple blogs)
