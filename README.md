@@ -72,6 +72,28 @@ Expand **Or paste a token manually** and enter a bearer token from your Indiekit
 | Default visibility | `public` | Applied when the note has no `visibility` field |
 | Write URL back to note | on | Saves the published post URL as `mp-url` in frontmatter |
 | Map #garden/* tags | on | Converts `#garden/plant` → `gardenStage: plant` Micropub property |
+| Show syndication dialog | `when-needed` | `when-needed` / `always` / `never` — controls when target picker appears before publish |
+| Default syndication targets | — | UIDs pre-ticked in the syndication dialog (from your Micropub config) |
+
+### Language
+
+The plugin follows Obsidian's display language automatically. Set it in **Settings → About → Language**.
+
+| Code | Language |
+|---|---|
+| `en` | English |
+| `de` | German |
+
+#### Adding a translation
+
+1. Copy `src/lang/en.ts` to `src/lang/<code>.ts` (e.g. `pt-BR.ts` → use code `pt`)
+2. Translate every string value — keep all `{placeholder}` tokens unchanged
+3. Register the locale in `src/i18n.ts`:
+   ```ts
+   import { pt } from "./lang/pt";
+   const locales = { en, de, pt };
+   ```
+4. Open a PR — translations are always welcome
 
 ---
 
@@ -211,12 +233,17 @@ npm run build  # production bundle (minified)
 
 ```
 src/
-  main.ts             Plugin entry point, commands, ribbon, protocol handler
-  types.ts            Shared interfaces and constants
-  MicropubClient.ts   Low-level HTTP (create, update, upload, discover)
-  Publisher.ts        Orchestrates publish flow (parse → upload → send → write-back)
-  IndieAuth.ts        PKCE IndieAuth sign-in via GitHub Pages relay
-  SettingsTab.ts      Obsidian settings UI
+  main.ts               Plugin entry point, commands, ribbon, protocol handler
+  types.ts              Shared interfaces and constants
+  MicropubClient.ts     Low-level HTTP (create, update, upload, discover)
+  Publisher.ts          Orchestrates publish flow (parse → upload → send → write-back)
+  IndieAuth.ts          PKCE IndieAuth sign-in via GitHub Pages relay
+  SettingsTab.ts        Obsidian settings UI
+  SyndicationDialog.ts  Pre-publish dialog to select syndication targets
+  i18n.ts               t() helper — locale detection and string lookup
+  lang/
+    en.ts               English strings (source of truth, 63 keys)
+    de.ts               German strings
 ```
 
 ---
