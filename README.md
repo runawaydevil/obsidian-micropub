@@ -73,6 +73,10 @@ Expand **Or paste a token manually** and enter a bearer token from your Indiekit
 | Show syndication dialog | `when-needed` | `when-needed` / `always` / `never` — controls when target picker appears before publish |
 | Default syndication targets | — | UIDs pre-ticked in the syndication dialog (from your Micropub config) |
 
+### Language
+
+The plugin follows Obsidian's display language. Set it in **Settings → About → Language**. Currently supported: English (`en`), German (`de`).
+
 ---
 
 ## Digital Garden workflow
